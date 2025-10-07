@@ -1,0 +1,40 @@
+{
+  "prompt": {
+    "project_description": "Develop a personal expense tracking application using Python 3.13, Django 5.2, and SQLite. The application should allow users to register various expense details including expense type, payment method, date, value, company, and description.",
+    "features": [
+      {
+        "feature_name": "Expense Registration",
+        "details": "Users can input the following details when registering an expense: type (category), method of payment (e.g., cash, credit card), date of the expense, total value, associated company, and a brief description."
+      },
+      {
+        "feature_name": "Dynamic Company Management",
+        "details": "If the user enters a company that does not exist in the database, a pop-up should appear prompting the user to add a new company. This should include a simple CRUD interface for managing company data."
+      },
+      {
+        "feature_name": "Dynamic Payment Method Management",
+        "details": "Similar to company management, if the user enters a payment method that is not in the system, a pop-up should appear allowing the user to create a new payment method, along with a CRUD interface for managing payment methods."
+      }
+    ],
+    "technical_requirements": {
+      "language": "Python 3.13",
+      "framework": "Django 5.2",
+      "database": "SQLite",
+      "libraries": [
+        "Django Forms for input handling",
+        "Django Admin for back-end management",
+        "Bootstrap for UI design"
+      ]
+    },
+    "user_interface": {
+      "main_screen": "A dashboard that shows a summary of expenses, with options to add, edit, or delete expenses.",
+      "pop_up_forms": {
+        "company": "Form to add/edit company with fields for company name and any additional details.",
+        "payment_method": "Form to add/edit payment method with fields for method name and description."
+      }
+    },
+    "testing_requirements": {
+      "unit_tests": "Create unit tests for all models, forms, and views to ensure functionality.",
+      "user_acceptance_testing": "Gather feedback from potential users to refine the user interface and experience."
+    }
+  }
+}
