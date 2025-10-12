@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from decimal import Decimal
 from datetime import date
-from .models import Company, PaymentForm, PaymentType, Expense
+from .models import Company, PaymentForm, ExpenseType, Expense
 
 
 class CompanyModelTest(TestCase):
@@ -64,28 +64,28 @@ class PaymentFormModelTest(TestCase):
             PaymentForm.objects.create(name="Cash")
 
 
-class PaymentTypeModelTest(TestCase):
-    """Test cases for PaymentType model"""
+class ExpenseTypeModelTest(TestCase):
+    """Test cases for ExpenseType model"""
 
-    def test_create_payment_type(self):
-        """Test creating a payment type"""
-        payment_type = PaymentType.objects.create(
+    def test_create_expense_type(self):
+        """Test creating an expense type"""
+        expense_type = ExpenseType.objects.create(
             name="Food",
             description="Food and groceries"
         )
-        self.assertEqual(payment_type.name, "Food")
-        self.assertEqual(payment_type.description, "Food and groceries")
+        self.assertEqual(expense_type.name, "Food")
+        self.assertEqual(expense_type.description, "Food and groceries")
 
-    def test_payment_type_str(self):
-        """Test payment type string representation"""
-        payment_type = PaymentType.objects.create(name="Transport")
-        self.assertEqual(str(payment_type), "Transport")
+    def test_expense_type_str(self):
+        """Test expense type string representation"""
+        expense_type = ExpenseType.objects.create(name="Transport")
+        self.assertEqual(str(expense_type), "Transport")
 
-    def test_payment_type_unique_name(self):
-        """Test that payment type names must be unique"""
-        PaymentType.objects.create(name="Food")
+    def test_expense_type_unique_name(self):
+        """Test that expense type names must be unique"""
+        ExpenseType.objects.create(name="Food")
         with self.assertRaises(IntegrityError):
-            PaymentType.objects.create(name="Food")
+            ExpenseType.objects.create(name="Food")
 
 
 class ExpenseModelTest(TestCase):
@@ -95,7 +95,7 @@ class ExpenseModelTest(TestCase):
         """Set up test data"""
         self.company = Company.objects.create(name="Test Company")
         self.payment_form = PaymentForm.objects.create(name="Credit Card")
-        self.payment_type = PaymentType.objects.create(name="Food")
+        self.expense_type = ExpenseType.objects.create(name="Food")
 
     def test_create_expense_with_eur_only(self):
         """Test creating expense with EUR only"""
@@ -105,7 +105,7 @@ class ExpenseModelTest(TestCase):
             amount_eur=Decimal("25.50"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         self.assertEqual(expense.amount_eur, Decimal("25.50"))
         self.assertIsNone(expense.amount_pyg)
@@ -118,7 +118,7 @@ class ExpenseModelTest(TestCase):
             amount_pyg=Decimal("50000"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         self.assertIsNone(expense.amount_eur)
         self.assertEqual(expense.amount_pyg, Decimal("50000"))
@@ -132,7 +132,7 @@ class ExpenseModelTest(TestCase):
             amount_pyg=Decimal("750000"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         self.assertEqual(expense.amount_eur, Decimal("100.00"))
         self.assertEqual(expense.amount_pyg, Decimal("750000"))
@@ -145,7 +145,7 @@ class ExpenseModelTest(TestCase):
                 description="Invalid expense",
                 company=self.company,
                 payment_form=self.payment_form,
-                payment_type=self.payment_type
+                expense_type=self.expense_type
             )
             expense.save()
 
@@ -161,7 +161,7 @@ class ExpenseModelTest(TestCase):
                 amount_eur=Decimal("-10.00"),
                 company=self.company,
                 payment_form=self.payment_form,
-                payment_type=self.payment_type
+                expense_type=self.expense_type
             )
             expense.save()
 
@@ -176,7 +176,7 @@ class ExpenseModelTest(TestCase):
                 amount_pyg=Decimal("-50000"),
                 company=self.company,
                 payment_form=self.payment_form,
-                payment_type=self.payment_type
+                expense_type=self.expense_type
             )
             expense.save()
 
@@ -191,7 +191,7 @@ class ExpenseModelTest(TestCase):
                 amount_eur=Decimal("0.00"),
                 company=self.company,
                 payment_form=self.payment_form,
-                payment_type=self.payment_type
+                expense_type=self.expense_type
             )
             expense.save()
 
@@ -203,7 +203,7 @@ class ExpenseModelTest(TestCase):
             amount_eur=Decimal("25.50"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         self.assertIn("2025-10-10", str(expense))
         self.assertIn("Test Company", str(expense))
@@ -217,7 +217,7 @@ class ExpenseModelTest(TestCase):
             amount_pyg=Decimal("50000"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         self.assertIn("2025-10-10", str(expense))
         self.assertIn("Test Company", str(expense))
@@ -232,7 +232,7 @@ class ExpenseModelTest(TestCase):
             amount_pyg=Decimal("750000"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         self.assertIn("€100.00", str(expense))
         self.assertIn("₲750,000", str(expense))
@@ -246,7 +246,7 @@ class ExpenseModelTest(TestCase):
             amount_eur=Decimal("10.00"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         expense2 = Expense.objects.create(
             date=date(2025, 10, 15),
@@ -254,7 +254,7 @@ class ExpenseModelTest(TestCase):
             amount_eur=Decimal("20.00"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
         expenses = Expense.objects.all()
         self.assertEqual(expenses[0], expense2)  # Newest first
@@ -268,7 +268,7 @@ class ExpenseModelTest(TestCase):
             amount_eur=Decimal("10.00"),
             company=self.company,
             payment_form=self.payment_form,
-            payment_type=self.payment_type
+            expense_type=self.expense_type
         )
 
         # Try to delete company - should be protected

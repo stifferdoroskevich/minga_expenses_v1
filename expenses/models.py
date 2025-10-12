@@ -33,16 +33,16 @@ class PaymentForm(models.Model):
         return self.name
 
 
-class PaymentType(models.Model):
-    """Master list of payment types (Tipos de pago): Food, Transport, Utilities, Entertainment, etc."""
+class ExpenseType(models.Model):
+    """Master list of expense types (Tipos de gasto): Food, Transport, Utilities, Entertainment, etc."""
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        verbose_name = "Payment Type"
-        verbose_name_plural = "Payment Types"
+        verbose_name = "Expense Type"
+        verbose_name_plural = "Expense Types"
         ordering = ['name']
 
     def __str__(self):
@@ -55,7 +55,7 @@ class Expense(models.Model):
     At least one currency must be filled.
     """
     date = models.DateField()
-    description = models.TextField()
+    description = models.TextField(blank=True, null=True)
     amount_eur = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -83,11 +83,11 @@ class Expense(models.Model):
         related_name='expenses',
         verbose_name="Payment Form (FP)"
     )
-    payment_type = models.ForeignKey(
-        PaymentType,
+    expense_type = models.ForeignKey(
+        ExpenseType,
         on_delete=models.PROTECT,
         related_name='expenses',
-        verbose_name="Payment Type (Tipo)"
+        verbose_name="Expense Type (Tipo)"
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -98,7 +98,7 @@ class Expense(models.Model):
             models.Index(fields=['date']),
             models.Index(fields=['company']),
             models.Index(fields=['payment_form']),
-            models.Index(fields=['payment_type']),
+            models.Index(fields=['expense_type']),
         ]
 
     def clean(self):

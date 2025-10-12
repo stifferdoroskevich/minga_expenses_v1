@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Company, PaymentForm, PaymentType, Expense
+from .models import Company, PaymentForm, ExpenseType, Expense
 
 
 @admin.register(Company)
@@ -38,15 +38,15 @@ class PaymentFormAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(PaymentType)
-class PaymentTypeAdmin(admin.ModelAdmin):
+@admin.register(ExpenseType)
+class ExpenseTypeAdmin(admin.ModelAdmin):
     list_display = ('name', 'description', 'created_at')
     search_fields = ('name', 'description')
     readonly_fields = ('created_at', 'updated_at')
     ordering = ('name',)
 
     fieldsets = (
-        ('Payment Type Information', {
+        ('Expense Type Information', {
             'fields': ('name', 'description')
         }),
         ('Metadata', {
@@ -58,9 +58,9 @@ class PaymentTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Expense)
 class ExpenseAdmin(admin.ModelAdmin):
-    list_display = ('date', 'company', 'payment_type', 'payment_form',
+    list_display = ('date', 'company', 'expense_type', 'payment_form',
                     'amount_eur', 'amount_pyg', 'short_description')
-    list_filter = ('date', 'company', 'payment_type', 'payment_form')
+    list_filter = ('date', 'company', 'expense_type', 'payment_form')
     search_fields = ('description', 'company__name')
     date_hierarchy = 'date'
     readonly_fields = ('created_at', 'updated_at')
@@ -68,7 +68,7 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ('Basic Information', {
-            'fields': ('date', 'company', 'payment_type', 'payment_form')
+            'fields': ('date', 'company', 'expense_type', 'payment_form')
         }),
         ('Amounts', {
             'fields': ('amount_eur', 'amount_pyg'),
@@ -85,7 +85,7 @@ class ExpenseAdmin(admin.ModelAdmin):
 
     def short_description(self, obj):
         """Display a shortened version of the description in the list view"""
-        if len(obj.description) > 50:
+        if obj.description and len(obj.description) > 50:
             return f"{obj.description[:50]}..."
-        return obj.description
+        return obj.description or ""
     short_description.short_description = 'Description'
