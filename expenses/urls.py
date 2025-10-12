@@ -6,6 +6,7 @@ from .views import (
     ExpenseTypeViewSet,
     ExpenseViewSet
 )
+from .auth_views import login, logout, user_info
 
 # Create a router and register viewsets
 router = DefaultRouter()
@@ -16,4 +17,8 @@ router.register(r'expenses', ExpenseViewSet, basename='expense')
 
 urlpatterns = [
     path('', include(router.urls)),
+    # Authentication endpoints
+    path('auth/login/', login, name='login'),
+    path('auth/logout/', logout, name='logout'),
+    path('auth/user/', user_info, name='user_info'),
 ]

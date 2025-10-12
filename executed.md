@@ -18,3 +18,41 @@
 
   # 7. Start the server
   python manage.py runserver
+
+FRONTEND
+
+ Run these commands from your project root:
+
+  # Create Vite React project
+  npm create vite@latest frontend -- --template react
+  choose react , then javascript
+
+  # Navigate to frontend folder
+  cd frontend
+
+  # Install dependencies
+  npm install
+
+  # Install Tailwind CSS
+  npm install -D tailwindcss postcss autoprefixer
+  npx tailwindcss init -p
+debug frontend 
+
+  # Check if tailwindcss is in node_modules
+  ls node_modules/.bin
+
+  # Or try this alternative command to initialize Tailwind
+  node node_modules/tailwindcss/lib/cli.js init -p
+
+
+
+  # Install additional dependencies
+  npm install react-router-dom axios
+  npm list react-router-dom
+  npm list axios
+
+ # Install the Tailwind PostCSS plugin
+  npm install -D @tailwindcss/postcss
+
+  cd frontend
+  npm run dev

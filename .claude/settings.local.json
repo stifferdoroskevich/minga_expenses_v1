@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/Monica/AppData/Local/npm-cache/_logs/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
