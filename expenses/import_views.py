@@ -26,8 +26,8 @@ def preview_import(request):
 
     try:
         if file_extension == 'xlsx':
-            # Parse Excel file
-            wb = openpyxl.load_workbook(uploaded_file)
+            # Parse Excel file - data_only=True to read formula results instead of formulas
+            wb = openpyxl.load_workbook(uploaded_file, data_only=True)
 
             # Try to find "transacciones" sheet, otherwise use first sheet
             if 'transacciones' in wb.sheetnames:
@@ -138,7 +138,8 @@ def import_expenses(request):
         # Parse file
         rows = []
         if file_extension == 'xlsx':
-            wb = openpyxl.load_workbook(uploaded_file)
+            # data_only=True to read formula results instead of formulas
+            wb = openpyxl.load_workbook(uploaded_file, data_only=True)
             ws = wb['transacciones'] if 'transacciones' in wb.sheetnames else wb.active
             for row in ws.iter_rows(min_row=2, values_only=True):
                 rows.append(list(row))
@@ -210,7 +211,7 @@ def import_expenses(request):
                         try:
                             # Clean EUR amount: remove currency symbols, spaces, convert comma to dot
                             clean_eur = amount_eur_str.replace('€', '').replace('$', '').replace(' ', '').replace(',', '.')
-                            amount_eur = Decimal(clean_eur)
+                            amount_eur = Decimal(clean_eur).quantize(Decimal('0.01'))  # Round to 2 decimal places
                         except (InvalidOperation, ValueError):
                             stats['errors'].append(f"Row {row_num}: Invalid EUR amount '{amount_eur_str}'")
                             continue
@@ -219,7 +220,7 @@ def import_expenses(request):
                         try:
                             # Clean PYG amount: remove currency symbols, dots (thousands separator), spaces, convert comma to dot
                             clean_pyg = amount_pyg_str.replace('₲', '').replace('$', '').replace(' ', '').replace('.', '').replace(',', '.')
-                            amount_pyg = Decimal(clean_pyg)
+                            amount_pyg = Decimal(clean_pyg).quantize(Decimal('1'))  # Round to 0 decimal places (integer)
                         except (InvalidOperation, ValueError):
                             stats['errors'].append(f"Row {row_num}: Invalid PYG amount '{amount_pyg_str}'")
                             continue
