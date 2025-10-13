@@ -67,6 +67,42 @@ const ExpenseList = () => {
     return amount;
   };
 
+  const handleExportCSV = () => {
+    // Build query params from current filters
+    const params = new URLSearchParams();
+    if (filters.date__gte) params.append('date_from', filters.date__gte);
+    if (filters.date__lte) params.append('date_to', filters.date__lte);
+
+    // Get auth token
+    const token = localStorage.getItem('token');
+
+    // Create download link
+    const url = `http://127.0.0.1:8000/api/analytics/export-csv/?${params.toString()}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'expenses_export.csv');
+
+    // Add authorization header via fetch and create blob
+    fetch(url, {
+      headers: {
+        'Authorization': `Token ${token}`
+      }
+    })
+      .then(response => response.blob())
+      .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        link.href = url;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+      })
+      .catch(err => {
+        console.error('Export failed:', err);
+        alert('Failed to export CSV');
+      });
+  };
+
   if (loading) {
     return (
       <div className="text-center py-12">
@@ -93,12 +129,20 @@ const ExpenseList = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Expenses</h1>
-        <Link
-          to="/expenses/new"
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          Add New Expense
-        </Link>
+        <div className="flex gap-3">
+          <button
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            Export CSV
+          </button>
+          <Link
+            to="/expenses/new"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+          >
+            Add New Expense
+          </Link>
+        </div>
       </div>
 
       {/* Filters */}

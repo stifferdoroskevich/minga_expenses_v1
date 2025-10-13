@@ -7,6 +7,14 @@ from .views import (
     ExpenseViewSet
 )
 from .auth_views import login, logout, user_info
+from .analytics_views import (
+    monthly_totals,
+    totals_by_company,
+    totals_by_payment_form,
+    totals_by_expense_type,
+    summary,
+    export_csv
+)
 
 # Create a router and register viewsets
 router = DefaultRouter()
@@ -21,4 +29,11 @@ urlpatterns = [
     path('auth/login/', login, name='login'),
     path('auth/logout/', logout, name='logout'),
     path('auth/user/', user_info, name='user_info'),
+    # Analytics endpoints
+    path('analytics/monthly/', monthly_totals, name='analytics-monthly'),
+    path('analytics/by-company/', totals_by_company, name='analytics-by-company'),
+    path('analytics/by-payment-form/', totals_by_payment_form, name='analytics-by-payment-form'),
+    path('analytics/by-expense-type/', totals_by_expense_type, name='analytics-by-expense-type'),
+    path('analytics/summary/', summary, name='analytics-summary'),
+    path('analytics/export-csv/', export_csv, name='analytics-export-csv'),
 ]

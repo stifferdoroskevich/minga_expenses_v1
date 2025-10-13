@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
 import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 import ExpenseList from './pages/ExpenseList';
 import ExpenseForm from './pages/ExpenseForm';
 import MasterListsManager from './pages/MasterListsManager';
@@ -23,6 +24,7 @@ function App() {
             }
           >
             <Route index element={<Home />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="expenses" element={<ExpenseList />} />
             <Route path="expenses/new" element={<ExpenseForm />} />
             <Route path="expenses/:id/edit" element={<ExpenseForm />} />
