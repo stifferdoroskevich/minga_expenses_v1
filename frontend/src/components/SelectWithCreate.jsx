@@ -29,10 +29,12 @@ const SelectWithCreate = ({
     setCreateError('');
 
     try {
+      console.log('Creating new item:', { name: newItemName.trim(), description: newItemDescription.trim() || null });
       const newItem = await onCreateNew({
         name: newItemName.trim(),
         description: newItemDescription.trim() || null,
       });
+      console.log('Created item:', newItem);
 
       // Set the newly created item as selected
       onChange({ target: { name, value: newItem.id } });
@@ -43,7 +45,12 @@ const SelectWithCreate = ({
       setNewItemDescription('');
     } catch (err) {
       console.error('Failed to create:', err);
-      setCreateError(err.response?.data?.name?.[0] || 'Failed to create item');
+      console.error('Error response:', err.response);
+      const errorMessage = err.response?.data?.name?.[0]
+        || err.response?.data?.detail
+        || err.message
+        || 'Failed to create item';
+      setCreateError(errorMessage);
     } finally {
       setCreating(false);
     }

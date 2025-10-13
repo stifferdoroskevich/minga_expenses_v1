@@ -56,33 +56,45 @@ const ExpenseForm = () => {
 
   const handleCreateCompany = async (data) => {
     try {
+      console.log('ExpenseForm: Creating company with data:', data);
       const response = await companyAPI.create(data);
+      console.log('ExpenseForm: Company created, response:', response);
       await fetchMasterLists();
+      console.log('ExpenseForm: Master lists refreshed');
       return response.data;
     } catch (err) {
-      console.error('Failed to create company:', err);
+      console.error('ExpenseForm: Failed to create company:', err);
+      console.error('ExpenseForm: Error details:', err.response?.data);
       throw err;
     }
   };
 
   const handleCreatePaymentForm = async (data) => {
     try {
+      console.log('ExpenseForm: Creating payment form with data:', data);
       const response = await paymentFormAPI.create(data);
+      console.log('ExpenseForm: Payment form created, response:', response);
       await fetchMasterLists();
+      console.log('ExpenseForm: Master lists refreshed');
       return response.data;
     } catch (err) {
-      console.error('Failed to create payment form:', err);
+      console.error('ExpenseForm: Failed to create payment form:', err);
+      console.error('ExpenseForm: Error details:', err.response?.data);
       throw err;
     }
   };
 
   const handleCreateExpenseType = async (data) => {
     try {
+      console.log('ExpenseForm: Creating expense type with data:', data);
       const response = await expenseTypeAPI.create(data);
+      console.log('ExpenseForm: Expense type created, response:', response);
       await fetchMasterLists();
+      console.log('ExpenseForm: Master lists refreshed');
       return response.data;
     } catch (err) {
-      console.error('Failed to create expense type:', err);
+      console.error('ExpenseForm: Failed to create expense type:', err);
+      console.error('ExpenseForm: Error details:', err.response?.data);
       throw err;
     }
   };
