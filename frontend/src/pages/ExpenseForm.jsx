@@ -45,9 +45,12 @@ const ExpenseForm = () => {
           expenseTypeAPI.getAll(),
         ]);
 
-      setCompanies(companiesRes.data.results || companiesRes.data);
-      setPaymentForms(paymentFormsRes.data.results || paymentFormsRes.data);
-      setExpenseTypes(expenseTypesRes.data.results || expenseTypesRes.data);
+      // Sort all lists alphabetically by name
+      const sortByName = (a, b) => a.name.localeCompare(b.name);
+
+      setCompanies((companiesRes.data.results || companiesRes.data).sort(sortByName));
+      setPaymentForms((paymentFormsRes.data.results || paymentFormsRes.data).sort(sortByName));
+      setExpenseTypes((expenseTypesRes.data.results || expenseTypesRes.data).sort(sortByName));
     } catch (err) {
       console.error('Failed to load master lists:', err);
       alert('Failed to load form data. Please refresh the page.');
