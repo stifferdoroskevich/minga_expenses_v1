@@ -15,6 +15,7 @@ from .analytics_views import (
     summary,
     export_csv
 )
+from .import_views import preview_import, import_expenses
 
 # Create a router and register viewsets
 router = DefaultRouter()
@@ -36,4 +37,7 @@ urlpatterns = [
     path('analytics/by-expense-type/', totals_by_expense_type, name='analytics-by-expense-type'),
     path('analytics/summary/', summary, name='analytics-summary'),
     path('analytics/export-csv/', export_csv, name='analytics-export-csv'),
+    # Import endpoints
+    path('import/preview/', preview_import, name='import-preview'),
+    path('import/expenses/', import_expenses, name='import-expenses'),
 ]

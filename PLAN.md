@@ -272,15 +272,53 @@ npm install react-router-dom axios
 - Date range selection for export
 - Filter by company, payment form, payment type before export
 
+---
+
+### Phase 3.4 — Import Functionality
+**Goal**: Bulk import existing expense data from Excel/CSV files
+
+### Features:
+- Import button on Expenses list page
+- Upload Excel (.xlsx) or CSV files
+- Read "transacciones" sheet from Excel files
+- Interactive column mapping interface:
+  - Map Excel columns (A-G in Spanish) to system fields
+  - Preview first 5 rows before import
+  - Default mapping for known column names
+- Auto-populate master lists from imported data:
+  - Companies extracted from data
+  - Payment Forms extracted from data
+  - Expense Types extracted from data
+  - Skip duplicates (unique name constraint)
+- Validation before import:
+  - Check required fields (date, amounts, company, payment form, expense type)
+  - Validate data types (dates, numbers)
+  - Show errors with row numbers
+- Import summary:
+  - Total rows processed
+  - Successful imports
+  - Errors/skipped rows
+  - New master list items created
+
+### Technical Requirements:
+- Backend: Install `openpyxl` for Excel file parsing
+- Parse Excel columns A to G from "transacciones" sheet
+- Support Spanish column names (Fecha, Descripción, EUR, PYG, Empresa, FP, Tipo)
+- Transaction: Import master lists first, then expenses
+- Error handling: Continue on row errors, report at end
+
 **Exit Criteria (STAGE 3 COMPLETE)**:
 - ✅ Dashboard shows accurate aggregates for both currencies
 - ✅ Charts render correctly with currency breakdown
 - ✅ Filters work (date range, currency selector)
 - ✅ CSV export includes both EUR and PYG columns
+- ✅ Excel/CSV import with column mapping
+- ✅ Master lists auto-populate from import data
+- ✅ Import validation and error reporting
 - ✅ Proper handling of expenses with dual currency
 - ✅ Reports are accurate and useful for decision-making
 
-**🎉 STAGE 3 MILESTONE**: Complete expense tracking with analytics!
+**🎉 STAGE 3 MILESTONE**: Complete expense tracking with analytics and data migration!
 
 ---
 

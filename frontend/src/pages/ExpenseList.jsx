@@ -130,6 +130,12 @@ const ExpenseList = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Expenses</h1>
         <div className="flex gap-3">
+          <Link
+            to="/expenses/import"
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+          >
+            Import
+          </Link>
           <button
             onClick={handleExportCSV}
             className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"

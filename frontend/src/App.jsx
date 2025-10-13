@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard';
 import ExpenseList from './pages/ExpenseList';
 import ExpenseForm from './pages/ExpenseForm';
 import MasterListsManager from './pages/MasterListsManager';
+import ImportExpenses from './pages/ImportExpenses';
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             <Route path="expenses" element={<ExpenseList />} />
             <Route path="expenses/new" element={<ExpenseForm />} />
             <Route path="expenses/:id/edit" element={<ExpenseForm />} />
+            <Route path="expenses/import" element={<ImportExpenses />} />
             <Route path="master-lists" element={<MasterListsManager />} />
           </Route>
         </Routes>
