@@ -2,7 +2,6 @@
 db.sqlite3
 __pycache__/
 .env
-executed.md
 
 
 # Logs
@@ -29,3 +28,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+executed.md
