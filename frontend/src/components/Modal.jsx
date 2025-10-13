@@ -3,6 +3,8 @@ import { createPortal } from 'react-dom';
 const Modal = ({ isOpen, onClose, title, children }) => {
   if (!isOpen) return null;
 
+  const modalRoot = document.getElementById('modal-root') || document.body;
+
   return createPortal(
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
@@ -30,7 +32,7 @@ const Modal = ({ isOpen, onClose, title, children }) => {
         </div>
       </div>
     </div>,
-    document.body
+    modalRoot
   );
 };
 

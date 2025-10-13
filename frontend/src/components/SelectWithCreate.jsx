@@ -26,6 +26,7 @@ const SelectWithCreate = ({
 
   const handleCreate = async (e) => {
     e.preventDefault();
+    e.stopPropagation();
 
     if (!newItemName.trim()) {
       setCreateError('Name is required');
