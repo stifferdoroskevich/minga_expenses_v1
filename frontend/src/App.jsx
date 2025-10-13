@@ -6,7 +6,7 @@ import Login from './pages/Login';
 import Home from './pages/Home';
 import ExpenseList from './pages/ExpenseList';
 import ExpenseForm from './pages/ExpenseForm';
-import MasterLists from './pages/MasterLists';
+import MasterListsManager from './pages/MasterListsManager';
 
 function App() {
   return (
@@ -26,7 +26,7 @@ function App() {
             <Route path="expenses" element={<ExpenseList />} />
             <Route path="expenses/new" element={<ExpenseForm />} />
             <Route path="expenses/:id/edit" element={<ExpenseForm />} />
-            <Route path="master-lists" element={<MasterLists />} />
+            <Route path="master-lists" element={<MasterListsManager />} />
           </Route>
         </Routes>
       </Router>

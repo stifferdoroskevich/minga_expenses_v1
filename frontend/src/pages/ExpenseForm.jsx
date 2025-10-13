@@ -6,6 +6,7 @@ import {
   paymentFormAPI,
   expenseTypeAPI,
 } from '../api/expenses';
+import SelectWithCreate from '../components/SelectWithCreate';
 
 const ExpenseForm = () => {
   const { id } = useParams();
@@ -50,6 +51,39 @@ const ExpenseForm = () => {
     } catch (err) {
       console.error('Failed to load master lists:', err);
       alert('Failed to load form data. Please refresh the page.');
+    }
+  };
+
+  const handleCreateCompany = async (data) => {
+    try {
+      const response = await companyAPI.create(data);
+      await fetchMasterLists();
+      return response.data;
+    } catch (err) {
+      console.error('Failed to create company:', err);
+      throw err;
+    }
+  };
+
+  const handleCreatePaymentForm = async (data) => {
+    try {
+      const response = await paymentFormAPI.create(data);
+      await fetchMasterLists();
+      return response.data;
+    } catch (err) {
+      console.error('Failed to create payment form:', err);
+      throw err;
+    }
+  };
+
+  const handleCreateExpenseType = async (data) => {
+    try {
+      const response = await expenseTypeAPI.create(data);
+      await fetchMasterLists();
+      return response.data;
+    } catch (err) {
+      console.error('Failed to create expense type:', err);
+      throw err;
     }
   };
 
@@ -187,77 +221,44 @@ const ExpenseForm = () => {
 
         {/* Company */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Company <span className="text-red-500">*</span>
-          </label>
-          <select
+          <SelectWithCreate
+            label="Company"
             name="company"
             value={formData.company}
             onChange={handleChange}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.company ? 'border-red-500' : 'border-gray-300'
-            }`}
-          >
-            <option value="">Select a company...</option>
-            {companies.map((company) => (
-              <option key={company.id} value={company.id}>
-                {company.name}
-              </option>
-            ))}
-          </select>
-          {errors.company && (
-            <p className="text-red-500 text-sm mt-1">{errors.company}</p>
-          )}
+            options={companies}
+            onCreateNew={handleCreateCompany}
+            error={errors.company}
+            required={true}
+          />
         </div>
 
         {/* Expense Type */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Expense Type <span className="text-red-500">*</span>
-          </label>
-          <select
+          <SelectWithCreate
+            label="Expense Type"
             name="expense_type"
             value={formData.expense_type}
             onChange={handleChange}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.expense_type ? 'border-red-500' : 'border-gray-300'
-            }`}
-          >
-            <option value="">Select expense type...</option>
-            {expenseTypes.map((type) => (
-              <option key={type.id} value={type.id}>
-                {type.name}
-              </option>
-            ))}
-          </select>
-          {errors.expense_type && (
-            <p className="text-red-500 text-sm mt-1">{errors.expense_type}</p>
-          )}
+            options={expenseTypes}
+            onCreateNew={handleCreateExpenseType}
+            error={errors.expense_type}
+            required={true}
+          />
         </div>
 
         {/* Payment Form */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Payment Form <span className="text-red-500">*</span>
-          </label>
-          <select
+          <SelectWithCreate
+            label="Payment Form"
             name="payment_form"
             value={formData.payment_form}
             onChange={handleChange}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.payment_form ? 'border-red-500' : 'border-gray-300'
-            }`}
-          >
-            <option value="">Select payment form...</option>
-            {paymentForms.map((form) => (
-              <option key={form.id} value={form.id}>
-                {form.name}
-              </option>
-            ))}
-          </select>
-          {errors.payment_form && (
-            <p className="text-red-500 text-sm mt-1">{errors.payment_form}</p>
-          )}
+            options={paymentForms}
+            onCreateNew={handleCreatePaymentForm}
+            error={errors.payment_form}
+            required={true}
+          />
         </div>
 
         {/* Currency Amounts */}
