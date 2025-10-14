@@ -1,32 +1,67 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { expenseAPI } from '../api/expenses';
 
 const ExpenseList = () => {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     date__gte: '',
     date__lte: '',
   });
+  const [nextPage, setNextPage] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
+  const tableContainerRef = useRef(null);
 
   useEffect(() => {
     fetchExpenses();
   }, []);
 
-  const fetchExpenses = async (filterParams = {}) => {
-    setLoading(true);
+  const fetchExpenses = async (filterParams = {}, page = 1, append = false) => {
+    if (append) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
     setError(null);
     try {
-      const response = await expenseAPI.getAll(filterParams);
-      setExpenses(response.data.results || response.data);
+      const params = { ...filterParams, page_size: 100, page };
+      const response = await expenseAPI.getAll(params);
+
+      if (append) {
+        setExpenses(prev => [...prev, ...(response.data.results || response.data)]);
+      } else {
+        setExpenses(response.data.results || response.data);
+      }
+
+      setHasMore(!!response.data.next);
+      setNextPage(response.data.next ? page + 1 : null);
     } catch (err) {
       setError('Failed to load expenses. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  const loadMoreExpenses = () => {
+    if (!loadingMore && hasMore && nextPage) {
+      const filterParams = {};
+      if (filters.search) filterParams.search = filters.search;
+      if (filters.date__gte) filterParams.date__gte = filters.date__gte;
+      if (filters.date__lte) filterParams.date__lte = filters.date__lte;
+      fetchExpenses(filterParams, nextPage, true);
+    }
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop <= clientHeight * 1.2) {
+      loadMoreExpenses();
     }
   };
 
@@ -41,6 +76,7 @@ const ExpenseList = () => {
     if (filters.search) params.search = filters.search;
     if (filters.date__gte) params.date__gte = filters.date__gte;
     if (filters.date__lte) params.date__lte = filters.date__lte;
+    // Don't pass page parameter - fetchExpenses will add page_size
     fetchExpenses(params);
   };
 
@@ -207,8 +243,13 @@ const ExpenseList = () => {
 
       {/* Expenses Table */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+        <div
+          ref={tableContainerRef}
+          onScroll={handleScroll}
+          className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto"
+        >
+          <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
@@ -286,6 +327,21 @@ const ExpenseList = () => {
             )}
           </tbody>
         </table>
+
+        {/* Loading More Indicator */}
+        {loadingMore && (
+          <div className="text-center py-4">
+            <div className="text-gray-600">Loading more expenses...</div>
+          </div>
+        )}
+
+        {/* End of List Indicator */}
+        {!loading && !hasMore && expenses.length > 0 && (
+          <div className="text-center py-4 text-gray-500 text-sm">
+            All expenses loaded ({expenses.length} total)
+          </div>
+        )}
+        </div>
       </div>
     </div>
   );
