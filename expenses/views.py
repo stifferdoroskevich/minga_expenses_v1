@@ -80,7 +80,7 @@ class ExpenseViewSet(viewsets.ModelViewSet):
         'expense_type': ['exact'],
     }
     search_fields = ['description', 'company__name']
-    ordering_fields = ['date', 'amount_eur', 'amount_pyg', 'created_at']
+    ordering_fields = ['date', 'amount_eur', 'amount_pyg', 'created_at', 'company__name', 'expense_type__name', 'payment_form__name']
     ordering = ['-date', '-created_at']
 
     def get_serializer_class(self):

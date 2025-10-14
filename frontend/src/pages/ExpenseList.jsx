@@ -14,6 +14,8 @@ const ExpenseList = () => {
   });
   const [nextPage, setNextPage] = useState(null);
   const [hasMore, setHasMore] = useState(true);
+  const [sortField, setSortField] = useState('date');
+  const [sortOrder, setSortOrder] = useState('desc');
   const tableContainerRef = useRef(null);
 
   useEffect(() => {
@@ -28,7 +30,9 @@ const ExpenseList = () => {
     }
     setError(null);
     try {
-      const params = { ...filterParams, page_size: 100, page };
+      // Add ordering parameter
+      const orderingParam = sortOrder === 'desc' ? `-${sortField}` : sortField;
+      const params = { ...filterParams, page_size: 100, page, ordering: orderingParam };
       const response = await expenseAPI.getAll(params);
 
       if (append) {
@@ -101,6 +105,28 @@ const ExpenseList = () => {
       return `₲${parseInt(amount).toLocaleString()}`;
     }
     return amount;
+  };
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      // Toggle sort order if same field
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new field with default desc order
+      setSortField(field);
+      setSortOrder('desc');
+    }
+    // Refresh data with new sorting
+    const filterParams = {};
+    if (filters.search) filterParams.search = filters.search;
+    if (filters.date__gte) filterParams.date__gte = filters.date__gte;
+    if (filters.date__lte) filterParams.date__lte = filters.date__lte;
+    fetchExpenses(filterParams);
+  };
+
+  const getSortIcon = (field) => {
+    if (sortField !== field) return ' ↕';
+    return sortOrder === 'asc' ? ' ↑' : ' ↓';
   };
 
   const handleExportCSV = () => {
@@ -251,17 +277,29 @@ const ExpenseList = () => {
           <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50 sticky top-0 z-10">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Date
+              <th
+                onClick={() => handleSort('date')}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                Date{getSortIcon('date')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Company
+              <th
+                onClick={() => handleSort('company__name')}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                Company{getSortIcon('company__name')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Expense Type
+              <th
+                onClick={() => handleSort('expense_type__name')}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                Expense Type{getSortIcon('expense_type__name')}
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Payment Form
+              <th
+                onClick={() => handleSort('payment_form__name')}
+                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+              >
+                Payment Form{getSortIcon('payment_form__name')}
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 EUR
