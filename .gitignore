@@ -2,6 +2,11 @@
 db.sqlite3
 __pycache__/
 .env
+.env.local
+.env.production
+staticfiles/
+*.pyc
+*.pyo
 
 
 # Logs
@@ -30,3 +35,12 @@ dist-ssr
 *.sw?
 executed.md
 *.xlsx
+
+*.tfvars
+*.tfstate
+*.tfstate.backup
+tfplan*
+.terraform/
+*.hcl
+
+*.pem
