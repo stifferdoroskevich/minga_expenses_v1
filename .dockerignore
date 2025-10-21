@@ -1,0 +1,11 @@
+frontend/
+terraform/
+.git/
+.env
+*.pyc
+__pycache__/
+*.sqlite3
+*.md
+.gitignore
+venv/
+env/

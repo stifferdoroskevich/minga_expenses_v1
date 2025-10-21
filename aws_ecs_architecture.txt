@@ -1,0 +1,103 @@
+## Architecture Overview - ECS Fargate Strategy
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                            AWS Cloud                                 │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │                        VPC (10.0.0.0/16)                       │  │
+│  │                                                                 │  │
+│  │  ┌────────────────────────────────────────────────────────┐   │  │
+│  │  │              Public Subnets (10.0.1.0/24)              │   │  │
+│  │  │                                                         │   │  │
+│  │  │   ┌─────────────────────────────────────────────┐     │   │  │
+│  │  │   │  Application Load Balancer (HTTPS)         │     │   │  │
+│  │  │   │  - /api/* → Django Target Group            │     │   │  │
+│  │  │   │  - /*     → React Target Group             │     │   │  │
+│  │  │   └──────────────┬──────────────────┬──────────┘     │   │  │
+│  │  │                  │                  │                 │   │  │
+│  │  │   ┌──────────────┘                  └──────────┐     │   │  │
+│  │  │   │    NAT Gateway                             │     │   │  │
+│  │  │   │    (10.0.1.100)                            │     │   │  │
+│  │  └───┴────────────────────────────────────────────┴─────┘   │  │
+│  │          │                                        │           │  │
+│  │  ┌───────┴────────────────────────────────────────┴───────┐ │  │
+│  │  │           Private Subnets (10.0.2.0/24)                 │ │  │
+│  │  │                                                          │ │  │
+│  │  │   ┌──────────────────────┐   ┌─────────────────────┐   │ │  │
+│  │  │   │  ECS Fargate Service │   │  ECS Fargate Service│   │ │  │
+│  │  │   │  ┌────────────────┐  │   │  ┌───────────────┐ │   │ │  │
+│  │  │   │  │ Django API     │  │   │  │ React (Nginx) │ │   │ │  │
+│  │  │   │  │ + Gunicorn     │  │   │  │ Static Build  │ │   │ │  │
+│  │  │   │  │ 0.25 vCPU      │  │   │  │ 0.25 vCPU     │ │   │ │  │
+│  │  │   │  │ 0.5 GB RAM     │  │   │  │ 0.5 GB RAM    │ │   │ │  │
+│  │  │   │  └────────┬───────┘  │   │  └───────────────┘ │   │ │  │
+│  │  │   │           │          │   │                     │   │ │  │
+│  │  │   │  Auto-scaling: 0-3   │   │  Auto-scaling: 0-3 │   │ │  │
+│  │  │   └───────────┬──────────┘   └─────────────────────┘   │ │  │
+│  │  │               │                                          │ │  │
+│  │  │               │  ┌──────────────────────────────────┐   │ │  │
+│  │  │               └─►│  EC2 Instance (PostgreSQL)      │   │ │  │
+│  │  │                  │  - t3.micro (always-on)          │   │ │  │
+│  │  │                  │  - 10.0.2.50                     │   │ │  │
+│  │  │                  │  - Security Group: port 5432     │   │ │  │
+│  │  │                  │  - EBS Volume (20GB)             │   │ │  │
+│  │  │                  └──────────────────────────────────┘   │ │  │
+│  │  │                                                          │ │  │
+│  │  └──────────────────────────────────────────────────────────┘ │  │
+│  └─────────────────────────────────────────────────────────────────┘  │
+│                                                                         │
+│  ┌──────────────────┐      ┌─────────────────────────────────────┐   │
+│  │  Amazon ECR      │      │  AWS Secrets Manager                │   │
+│  │  - Django Image  │      │  - DB_PASSWORD                      │   │
+│  │  - React Image   │      │  - DJANGO_SECRET_KEY                │   │
+│  └──────────────────┘      └─────────────────────────────────────┘   │
+│                                                                         │
+│  ┌──────────────────────────────────────────────────────────────────┐ │
+│  │  CloudFront CDN                                                   │ │
+│  │  └─► S3 Bucket (Django static files: CSS, JS, images)           │ │
+│  └──────────────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────────────────┘
+
+Internet Users
+      │
+      ▼
+┌─────────────┐
+│  Route 53   │  (Optional: your-domain.com)
+│  DNS        │
+└──────┬──────┘
+       │
+       ▼
+   ALB (HTTPS)
+```
+
+## Key Changes from Your Diagram
+
+1. **PostgreSQL on EC2** (not SQLite on EFS)
+   - Dedicated EC2 instance in private subnet
+   - EBS for persistent storage
+   - Always-on for your use case
+
+2. **Private Subnets for ECS**
+   - Django and React tasks run in private subnet
+   - Only ALB is public-facing
+   - NAT Gateway for outbound internet access
+
+3. **Proper Database Setup**
+   - PostgreSQL with proper backup strategy
+   - Security group restricts access to ECS tasks only
+   - No network filesystem issues
+
+4. **Auto-scaling Configuration**
+   - Scale to 0 when not in use (cost optimization)
+   - Scale up to 3 during usage
+   - Based on ALB request count or schedule
+
+5. **Static Files**
+   - Django static assets → S3 + CloudFront
+   - React build served from ECS (or optionally S3)
+
+## Security Groups
+
+- **ALB SG**: Allow 80/443 from internet
+- **ECS SG**: Allow traffic from ALB only
+- **PostgreSQL SG**: Allow 5432 from ECS SG only
