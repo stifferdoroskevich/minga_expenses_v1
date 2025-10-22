@@ -17,8 +17,8 @@ resource "aws_ecs_task_definition" "django_app" {
   family                   = "${var.project_name}-django"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 256
-  memory                   = 512
+  cpu                      = 512
+  memory                   = 1024
   execution_role_arn       = aws_iam_role.ecs_execution_role.arn
   task_role_arn           = aws_iam_role.ecs_task_role.arn
 
@@ -96,7 +96,8 @@ resource "aws_ecs_service" "django_app" {
   task_definition = aws_ecs_task_definition.django_app.arn
   desired_count   = 1
   launch_type     = "FARGATE"
-  
+
+  force_new_deployment   = true
   enable_execute_command = true
 
   deployment_circuit_breaker {

@@ -81,6 +81,7 @@ const ImportExpenses = () => {
     try {
       const response = await apiClient.post('import/preview/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 300000, // 5 minutes timeout for file uploads
       });
 
       setPreviewData(response.data);
@@ -140,6 +141,7 @@ const ImportExpenses = () => {
     try {
       const response = await apiClient.post('import/expenses/', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
+        timeout: 300000, // 5 minutes timeout for file uploads
       });
 
       setImportResults(response.data);

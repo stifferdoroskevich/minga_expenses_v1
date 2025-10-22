@@ -169,7 +169,7 @@ terraform apply
 
 # Build and push image
 cd ..
-aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin $(cd terraform && terraform output -raw ecr_repository_url)
+aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $(cd terraform && terraform output -raw ecr_repository_url)
 docker build -t expenses-app-django .
 docker tag expenses-app-django:latest $(cd terraform && terraform output -raw ecr_repository_url):latest
 docker push $(cd terraform && terraform output -raw ecr_repository_url):latest
@@ -199,9 +199,160 @@ Note: NAT Gateway is the most expensive component. Consider removing it if your 
 2. **Database connection issues**: Verify environment variables in ECS task definition
 3. **Health check failures**: Ensure `/api/health/` endpoint is accessible
 
+## Frontend Deployment (React App)
+
+**See [FRONTEND_DEPLOYMENT_REQUIREMENTS.md](FRONTEND_DEPLOYMENT_REQUIREMENTS.md) for detailed requirements (spoiler: you don't need a domain or SSL certificate!)**
+
+### Step 0: Ensure CORS is Configured
+
+Your backend needs to allow requests from your CloudFront domain. Update your Django settings:
+
+```python
+# In core/settings_prod.py or core/settings.py
+CORS_ALLOW_ALL_ORIGINS = True  # Simple option for personal projects
+
+# Or be more specific (update after getting your CloudFront URL):
+# CORS_ALLOWED_ORIGINS = [
+#     "https://d1234abcd5678.cloudfront.net",  # Your CloudFront URL
+# ]
+```
+
+### Step 1: Configure Frontend API Endpoint
+
+Before building the frontend, you need to configure the API endpoint to point to your deployed backend.
+
+Create a `.env.production` file in the `frontend` directory:
+
+```bash
+cd frontend
+cat > .env.production << EOF
+VITE_API_URL=https://$(cd ../terraform && terraform output -raw alb_dns_name)/api/
+EOF
+cd ..
+```
+
+Or manually create `frontend/.env.production`:
+```
+VITE_API_URL=https://your-alb-dns-name-here/api/
+```
+
+**Note**:
+- Make sure the URL ends with `/api/` to match your Django API endpoints
+- Use `https://` (not `http://`) to avoid mixed content errors with CloudFront
+
+### Step 2: Build Frontend
+
+```bash
+cd frontend
+npm install
+npm run build
+cd ..
+```
+
+This creates an optimized production build in the `frontend/dist` directory.
+
+### Step 3: Deploy Frontend Infrastructure
+
+If you haven't already deployed the frontend infrastructure:
+
+```bash
+cd terraform
+terraform apply
+```
+
+This will create:
+- S3 bucket for static website hosting
+- CloudFront distribution for global CDN
+- Proper bucket policies and configurations
+
+### Step 4: Upload Frontend to S3
+
+```bash
+# Sync the built files to S3
+aws s3 sync frontend/dist/ s3://$(cd terraform && terraform output -raw frontend_s3_bucket)/ --delete
+
+# Create CloudFront invalidation to clear cache
+aws cloudfront create-invalidation \
+  --distribution-id $(cd terraform && terraform output -raw cloudfront_distribution_id) \
+  --paths "/*"
+```
+
+### Step 5: Access Frontend
+
+Get the frontend URL:
+```bash
+cd terraform
+echo "Frontend URL: $(terraform output -raw frontend_cloudfront_url)"
+```
+
+### Frontend Deployment Commands Summary
+
+```bash
+# Configure API endpoint
+cd frontend
+cat > .env.production << EOF
+VITE_API_URL=https://$(cd ../terraform && terraform output -raw alb_dns_name)/api/
+EOF
+
+# Build frontend
+npm install
+npm run build
+cd ..
+
+# Deploy infrastructure (if not already done)
+cd terraform
+terraform apply
+cd ..
+
+# Upload to S3
+aws s3 sync frontend/dist/ s3://$(cd terraform && terraform output -raw frontend_s3_bucket)/ --delete
+
+# Invalidate CloudFront cache
+aws cloudfront create-invalidation \
+  --distribution-id $(cd terraform && terraform output -raw cloudfront_distribution_id) \
+  --paths "/*"
+
+# Get frontend URL
+cd terraform
+terraform output frontend_cloudfront_url
+```
+
+### Frontend Update Process
+
+When you make changes to the frontend:
+
+```bash
+# 1. Rebuild
+cd frontend
+npm run build
+cd ..
+
+# 2. Upload to S3
+aws s3 sync frontend/dist/ s3://$(cd terraform && terraform output -raw frontend_s3_bucket)/ --delete
+
+# 3. Invalidate CloudFront cache
+aws cloudfront create-invalidation \
+  --distribution-id $(cd terraform && terraform output -raw cloudfront_distribution_id) \
+  --paths "/*"
+```
+
+**Note**: CloudFront invalidations may take a few minutes to complete. The first 1,000 invalidation paths per month are free, then $0.005 per path.
+
+### Frontend Cost Estimate
+
+Expected monthly cost for frontend: **~$1-3/month** (for low traffic)
+- S3 Storage: $0.10 (for ~1GB)
+- S3 Requests: $0.50
+- CloudFront: $1.00 (first 10TB of data transfer is $0.085/GB)
+- CloudFront Requests: $0.50
+
 ## Cleanup
 
 ```bash
+# Delete frontend files from S3 first
+aws s3 rm s3://$(cd terraform && terraform output -raw frontend_s3_bucket)/ --recursive
+
+# Then destroy infrastructure
 cd terraform
 terraform destroy
 ```

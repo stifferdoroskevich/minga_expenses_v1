@@ -124,7 +124,9 @@ class Expense(models.Model):
 
     def save(self, *args, **kwargs):
         """Override save to call full_clean for validation"""
-        self.full_clean()
+        # Skip validation if being used in bulk_create
+        if not kwargs.pop('skip_validation', False):
+            self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):
