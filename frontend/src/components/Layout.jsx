@@ -59,7 +59,7 @@ const Layout = () => {
                 Welcome, <span className="font-medium">{user?.username}</span>
               </span>
               <a
-                href="http://127.0.0.1:8000/admin/"
+                href="/admin/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium"

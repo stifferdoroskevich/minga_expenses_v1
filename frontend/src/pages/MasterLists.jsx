@@ -8,7 +8,7 @@ const MasterLists = () => {
           Manage your master lists (Companies, Payment Forms, and Expense Types) through the Django Admin interface for now.
         </p>
         <a
-          href="http://127.0.0.1:8000/admin/"
+          href="/admin/"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"

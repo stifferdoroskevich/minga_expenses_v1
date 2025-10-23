@@ -139,7 +139,7 @@ const ExpenseList = () => {
     const token = localStorage.getItem('token');
 
     // Create download link
-    const url = `http://127.0.0.1:8000/api/analytics/export-csv/?${params.toString()}`;
+    const url = `/api/analytics/export-csv/?${params.toString()}`;
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute('download', 'expenses_export.csv');
