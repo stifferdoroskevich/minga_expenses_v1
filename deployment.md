@@ -89,11 +89,11 @@ terraform apply
 ```
 
 This creates:
-- VPC with public/private subnets
+- VPC with public/private subnets (both using Internet Gateway directly)
 - Application Load Balancer (ALB)
-- ECS Cluster with Fargate
+- ECS Cluster with Fargate (tasks run in public subnets with public IPs)
 - ECR Repository
-- Security Groups
+- Security Groups (ECS tasks only accept traffic from ALB)
 - IAM Roles
 - CloudWatch Log Groups
 
@@ -184,14 +184,13 @@ aws ecs update-service \
 
 ## Cost Monitoring
 
-Expected monthly cost: **~$20/month**
+Expected monthly cost: **~$20/month** (down from ~$55/month)
 - ALB: $16.70
 - ECS Fargate: $2.50
 - ECR: $0.50
-- VPC/NAT Gateway: $32.40
 - CloudWatch Logs: $0.50
 
-Note: NAT Gateway is the most expensive component. Consider removing it if your app doesn't need outbound internet access from private subnets.
+**Cost Optimization Applied:** NAT Gateway has been removed (~$35/month savings). ECS tasks now run in public subnets with public IP addresses, accessing the internet directly via the Internet Gateway. Security is maintained through security groups that only allow traffic from the ALB.
 
 ## Troubleshooting
 

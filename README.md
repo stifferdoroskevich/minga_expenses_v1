@@ -110,6 +110,29 @@ minga_expenses_1/
     └── package.json
 ```
 
+## AWS Deployment
+
+See [deployment.md](deployment.md) for complete AWS deployment guide.
+
+**Infrastructure Overview:**
+- Backend: ECS Fargate with Django (public subnets)
+- Frontend: S3 + CloudFront
+- Database: External PostgreSQL (Supabase)
+- Load Balancer: Application Load Balancer (ALB)
+- Cost: ~$20/month (optimized without NAT Gateway)
+
+**Quick Deploy:**
+```bash
+cd terraform
+terraform apply
+
+# Deploy backend
+./deploy.sh
+
+# Deploy frontend
+./deploy-frontend.sh
+```
+
 ## License
 
 Private project for personal use.
