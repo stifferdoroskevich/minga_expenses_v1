@@ -15,14 +15,26 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { analyticsAPI } from '../api/analytics';
+import { expenseTypeAPI } from '../api/expenses';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
+
+  // Get first day of current month in YYYY-MM-DD format
+  const getFirstDayOfMonth = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    return `${year}-${month}-01`;
+  };
+
   const [dateRange, setDateRange] = useState({
-    date_from: '',
+    date_from: getFirstDayOfMonth(),
     date_to: '',
   });
-  const [currency, setCurrency] = useState('both'); // 'both', 'eur', 'pyg'
+  const [currency, setCurrency] = useState('eur'); // 'both', 'eur', 'pyg'
+  const [selectedExpenseTypes, setSelectedExpenseTypes] = useState([]); // Array of expense type IDs
+  const [availableExpenseTypes, setAvailableExpenseTypes] = useState([]); // All expense types from API
 
   const [summary, setSummary] = useState(null);
   const [monthlyData, setMonthlyData] = useState([]);
@@ -31,8 +43,18 @@ const Dashboard = () => {
   const [expenseTypeData, setExpenseTypeData] = useState([]);
 
   useEffect(() => {
+    fetchExpenseTypes();
     fetchAllData();
   }, []);
+
+  const fetchExpenseTypes = async () => {
+    try {
+      const response = await expenseTypeAPI.getAll();
+      setAvailableExpenseTypes(response.data.results || response.data);
+    } catch (err) {
+      console.error('Failed to load expense types:', err);
+    }
+  };
 
   const fetchAllData = async (params = {}) => {
     setLoading(true);
@@ -63,7 +85,18 @@ const Dashboard = () => {
     const params = {};
     if (dateRange.date_from) params.date_from = dateRange.date_from;
     if (dateRange.date_to) params.date_to = dateRange.date_to;
+    if (selectedExpenseTypes.length > 0) {
+      params.expense_type_ids = selectedExpenseTypes.join(',');
+    }
     fetchAllData(params);
+  };
+
+  const handleExpenseTypeToggle = (typeId) => {
+    setSelectedExpenseTypes((prev) =>
+      prev.includes(typeId)
+        ? prev.filter((id) => id !== typeId)
+        : [...prev, typeId]
+    );
   };
 
   const handleDateChange = (e) => {
@@ -78,16 +111,47 @@ const Dashboard = () => {
     return value;
   };
 
-  // Prepare monthly chart data based on currency selection
+  // Prepare monthly chart data based on currency and expense type selection
   const getMonthlyChartData = () => {
-    return monthlyData.map((item) => ({
-      month: new Date(item.month).toLocaleDateString('default', {
-        month: 'short',
-        year: 'numeric',
-      }),
-      EUR: currency === 'pyg' ? 0 : item.total_eur || 0,
-      PYG: currency === 'eur' ? 0 : item.total_pyg || 0,
-    }));
+    // If expense types are selected, group by expense type
+    if (selectedExpenseTypes.length > 0) {
+      // Group data by month and expense type
+      const groupedByMonth = {};
+
+      monthlyData.forEach((item) => {
+        const monthKey = new Date(item.month).toLocaleDateString('default', {
+          month: 'short',
+          year: 'numeric',
+        });
+
+        if (!groupedByMonth[monthKey]) {
+          groupedByMonth[monthKey] = { month: monthKey };
+        }
+
+        // Add data for each expense type
+        const typeName = item.expense_type__name;
+        if (currency === 'eur') {
+          groupedByMonth[monthKey][typeName] = item.total_eur || 0;
+        } else if (currency === 'pyg') {
+          groupedByMonth[monthKey][typeName] = item.total_pyg || 0;
+        } else {
+          // For 'both', use EUR by default (could also add separate lines for EUR and PYG)
+          groupedByMonth[monthKey][typeName] = item.total_eur || 0;
+        }
+      });
+
+      return Object.values(groupedByMonth);
+    } else {
+      // Normal view without expense type breakdown
+      return monthlyData.map((item) => ({
+        month: new Date(item.month).toLocaleDateString('default', {
+          month: 'short',
+          year: 'numeric',
+        }),
+        EUR: currency === 'pyg' ? 0 : item.total_eur || 0,
+        PYG: currency === 'eur' ? 0 : item.total_pyg || 0,
+      }));
+    }
   };
 
   // Colors for charts
@@ -118,7 +182,7 @@ const Dashboard = () => {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               From Date
@@ -166,6 +230,33 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Expense Type Multi-Select Filter */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Filter by Expense Type (Multi-select)
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {availableExpenseTypes.map((type) => (
+              <button
+                key={type.id}
+                onClick={() => handleExpenseTypeToggle(type.id)}
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  selectedExpenseTypes.includes(type.id)
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                {type.name}
+              </button>
+            ))}
+          </div>
+          {selectedExpenseTypes.length > 0 && (
+            <div className="mt-2 text-sm text-gray-600">
+              {selectedExpenseTypes.length} type(s) selected
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -200,7 +291,10 @@ const Dashboard = () => {
 
       {/* Monthly Trend Chart */}
       <div className="bg-white p-6 rounded-lg shadow-sm mb-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Monthly Trend</h2>
+        <h2 className="text-xl font-bold text-gray-900 mb-4">
+          Monthly Trend
+          {selectedExpenseTypes.length > 0 && ' (by Expense Type)'}
+        </h2>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={getMonthlyChartData()}>
             <CartesianGrid strokeDasharray="3 3" />
@@ -208,23 +302,42 @@ const Dashboard = () => {
             <YAxis />
             <Tooltip />
             <Legend />
-            {currency !== 'pyg' && (
-              <Line
-                type="monotone"
-                dataKey="EUR"
-                stroke="#3B82F6"
-                strokeWidth={2}
-                name="EUR (€)"
-              />
-            )}
-            {currency !== 'eur' && (
-              <Line
-                type="monotone"
-                dataKey="PYG"
-                stroke="#10B981"
-                strokeWidth={2}
-                name="PYG (₲)"
-              />
+            {selectedExpenseTypes.length > 0 ? (
+              // Render a line for each selected expense type
+              availableExpenseTypes
+                .filter((type) => selectedExpenseTypes.includes(type.id))
+                .map((type, index) => (
+                  <Line
+                    key={type.id}
+                    type="monotone"
+                    dataKey={type.name}
+                    stroke={COLORS[index % COLORS.length]}
+                    strokeWidth={2}
+                    name={type.name}
+                  />
+                ))
+            ) : (
+              // Default view: show EUR and/or PYG lines
+              <>
+                {currency !== 'pyg' && (
+                  <Line
+                    type="monotone"
+                    dataKey="EUR"
+                    stroke="#3B82F6"
+                    strokeWidth={2}
+                    name="EUR (€)"
+                  />
+                )}
+                {currency !== 'eur' && (
+                  <Line
+                    type="monotone"
+                    dataKey="PYG"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    name="PYG (₲)"
+                  />
+                )}
+              </>
             )}
           </LineChart>
         </ResponsiveContainer>

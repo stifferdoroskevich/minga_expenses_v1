@@ -12,11 +12,16 @@ import csv
 def monthly_totals(request):
     """
     Get monthly expense totals, separated by currency.
-    Query params: date_from (YYYY-MM-DD), date_to (YYYY-MM-DD)
+    Can be broken down by expense types if expense_type_ids is provided.
+    Query params:
+        - date_from (YYYY-MM-DD)
+        - date_to (YYYY-MM-DD)
+        - expense_type_ids (comma-separated list of IDs)
     """
     # Get date range from query params
     date_from = request.query_params.get('date_from')
     date_to = request.query_params.get('date_to')
+    expense_type_ids = request.query_params.get('expense_type_ids')
 
     queryset = Expense.objects.all()
 
@@ -25,16 +30,32 @@ def monthly_totals(request):
     if date_to:
         queryset = queryset.filter(date__lte=date_to)
 
-    # Aggregate by month
-    monthly_data = queryset.annotate(
-        month=TruncMonth('date')
-    ).values('month').annotate(
-        total_eur=Sum('amount_eur'),
-        total_pyg=Sum('amount_pyg'),
-        count=Count('id')
-    ).order_by('month')
+    # If expense types are specified, return data broken down by type
+    if expense_type_ids:
+        type_ids = [int(id.strip()) for id in expense_type_ids.split(',') if id.strip()]
+        queryset = queryset.filter(expense_type_id__in=type_ids)
 
-    return Response(list(monthly_data))
+        # Aggregate by month and expense type
+        monthly_data = queryset.select_related('expense_type').annotate(
+            month=TruncMonth('date')
+        ).values('month', 'expense_type__id', 'expense_type__name').annotate(
+            total_eur=Sum('amount_eur'),
+            total_pyg=Sum('amount_pyg'),
+            count=Count('id')
+        ).order_by('month', 'expense_type__name')
+
+        return Response(list(monthly_data))
+    else:
+        # Aggregate by month only
+        monthly_data = queryset.annotate(
+            month=TruncMonth('date')
+        ).values('month').annotate(
+            total_eur=Sum('amount_eur'),
+            total_pyg=Sum('amount_pyg'),
+            count=Count('id')
+        ).order_by('month')
+
+        return Response(list(monthly_data))
 
 
 @api_view(['GET'])
