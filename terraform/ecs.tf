@@ -114,15 +114,7 @@ resource "aws_ecs_service" "django_app" {
     assign_public_ip = true
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.django_app.arn
-    container_name   = "django"
-    container_port   = 8000
-  }
-
-  depends_on = [aws_lb_listener.django_app]
-
-
+  # No load balancer - CloudFront connects directly to ECS task
 
   tags = {
     Name = "${var.project_name}-django-service"

@@ -1,3 +1,9 @@
+# Random password for CloudFront custom header (security)
+resource "random_password" "cloudfront_custom_header" {
+  length  = 32
+  special = false
+}
+
 # CloudFront Origin Access Control
 resource "aws_cloudfront_origin_access_control" "frontend" {
   name                              = "${var.project_name}-frontend-oac"
@@ -21,18 +27,26 @@ resource "aws_cloudfront_distribution" "frontend" {
     origin_access_control_id = aws_cloudfront_origin_access_control.frontend.id
   }
 
-  # ALB Origin for Backend API
+  # ECS Task Origin for Backend API (DNS will be updated by Lambda)
   origin {
-    domain_name = aws_lb.main.dns_name
-    origin_id   = "ALB-Backend"
+    domain_name = "localhost.localdomain"  # Placeholder - will be updated by Lambda on first task start
+    origin_id   = "ECS-Backend"
 
     custom_origin_config {
-      http_port              = 80
+      http_port              = 8000
       https_port             = 443
-      origin_protocol_policy = "http-only"  # ALB will handle HTTP internally
+      origin_protocol_policy = "http-only"  # Connect directly to ECS task on port 8000
       origin_ssl_protocols   = ["TLSv1.2"]
     }
+
+    custom_header {
+      name  = "X-Custom-Origin-Auth"
+      value = random_password.cloudfront_custom_header.result
+    }
   }
+
+  # Note: Lambda will update the ECS-Backend origin domain_name dynamically
+  # If Terraform tries to revert it, you may need to manually adjust or re-run Lambda
 
   # Default behavior - serve frontend from S3
   default_cache_behavior {
@@ -55,10 +69,10 @@ resource "aws_cloudfront_distribution" "frontend" {
     compress               = true
   }
 
-  # API behavior - proxy to ALB
+  # API behavior - proxy to ECS
   ordered_cache_behavior {
     path_pattern     = "/api/*"
-    target_origin_id = "ALB-Backend"
+    target_origin_id = "ECS-Backend"
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
 
@@ -78,10 +92,10 @@ resource "aws_cloudfront_distribution" "frontend" {
     compress               = true
   }
 
-  # Django Admin behavior - proxy to ALB
+  # Django Admin behavior - proxy to ECS
   ordered_cache_behavior {
     path_pattern     = "/admin/*"
-    target_origin_id = "ALB-Backend"
+    target_origin_id = "ECS-Backend"
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
 
@@ -104,7 +118,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   # Static files for Django Admin
   ordered_cache_behavior {
     path_pattern     = "/static/*"
-    target_origin_id = "ALB-Backend"
+    target_origin_id = "ECS-Backend"
     allowed_methods  = ["GET", "HEAD", "OPTIONS"]
     cached_methods   = ["GET", "HEAD", "OPTIONS"]
 

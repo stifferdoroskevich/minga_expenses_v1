@@ -1,0 +1,39 @@
+# Create a self-signed certificate for the ALB
+# This allows HTTPS on the ALB without needing a custom domain
+# The browser will show a warning, but it solves the mixed content error
+
+# We'll create the certificate locally and import it to ACM
+resource "tls_private_key" "alb" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "tls_self_signed_cert" "alb" {
+  private_key_pem = tls_private_key.alb.private_key_pem
+
+  subject {
+    common_name  = "*.elb.amazonaws.com"
+    organization = var.project_name
+  }
+
+  validity_period_hours = 87600 # 10 years
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "server_auth",
+  ]
+}
+
+resource "aws_acm_certificate" "alb" {
+  private_key      = tls_private_key.alb.private_key_pem
+  certificate_body = tls_self_signed_cert.alb.cert_pem
+
+  tags = {
+    Name = "${var.project_name}-alb-cert"
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}

@@ -3,11 +3,6 @@ output "ecr_repository_url" {
   value       = aws_ecr_repository.django_app.repository_url
 }
 
-output "alb_dns_name" {
-  description = "ALB DNS name"
-  value       = aws_lb.main.dns_name
-}
-
 output "vpc_id" {
   description = "VPC ID"
   value       = aws_vpc.main.id
