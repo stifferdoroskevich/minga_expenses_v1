@@ -164,4 +164,10 @@ resource "aws_cloudfront_distribution" "frontend" {
   tags = {
     Name = "${var.project_name}-frontend-cdn"
   }
+
+  lifecycle {
+    # Ignore changes to origin domain_name made by Lambda
+    # Lambda updates the ECS-Backend origin dynamically when tasks start
+    ignore_changes = [origin]
+  }
 }
