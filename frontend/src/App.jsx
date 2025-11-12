@@ -9,6 +9,7 @@ import ExpenseList from './pages/ExpenseList';
 import ExpenseForm from './pages/ExpenseForm';
 import MasterListsManager from './pages/MasterListsManager';
 import ImportExpenses from './pages/ImportExpenses';
+import Reports from './pages/Reports';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           >
             <Route index element={<Home />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="reports" element={<Reports />} />
             <Route path="expenses" element={<ExpenseList />} />
             <Route path="expenses/new" element={<ExpenseForm />} />
             <Route path="expenses/:id/edit" element={<ExpenseForm />} />

@@ -16,12 +16,14 @@ def monthly_totals(request):
     Query params:
         - date_from (YYYY-MM-DD)
         - date_to (YYYY-MM-DD)
-        - expense_type_ids (comma-separated list of IDs)
+        - expense_type_ids (comma-separated list of IDs or single ID)
+        - company_id (single ID)
     """
     # Get date range from query params
     date_from = request.query_params.get('date_from')
     date_to = request.query_params.get('date_to')
     expense_type_ids = request.query_params.get('expense_type_ids')
+    company_id = request.query_params.get('company_id')
 
     queryset = Expense.objects.all()
 
@@ -29,6 +31,8 @@ def monthly_totals(request):
         queryset = queryset.filter(date__gte=date_from)
     if date_to:
         queryset = queryset.filter(date__lte=date_to)
+    if company_id:
+        queryset = queryset.filter(company_id=company_id)
 
     # If expense types are specified, return data broken down by type
     if expense_type_ids:

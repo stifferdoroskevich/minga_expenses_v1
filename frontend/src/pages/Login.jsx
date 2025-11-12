@@ -106,8 +106,7 @@ const Login = () => {
         </form>
 
         <div className="text-center text-sm text-gray-600">
-          <p>Use the superuser account you created earlier</p>
-          <p className="mt-2 text-xs text-gray-400">
+          <p className="text-xs text-gray-400">
             Build: {new Date(__BUILD_TIME__).toLocaleString()}
           </p>
         </div>
