@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: CICD/Dockerfile.backend
+    container_name: minga_backend_prod
+    restart: unless-stopped
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - "8000"
+    env_file:
+      - ../.env
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+             python manage.py collectstatic --noinput &&
+             gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 60 core.wsgi:application"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/admin/login/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - minga_network
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: CICD/Dockerfile.frontend
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+    container_name: minga_frontend_prod
+    restart: unless-stopped
+    expose:
+      - "80"
+    depends_on:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - minga_network
+
+volumes:
+  static_volume:
+  media_volume:
+
+networks:
+  minga_network:
+    driver: bridge

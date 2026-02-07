@@ -4,3 +4,6 @@ django-cors-headers
 django-filter
 python-dotenv
 openpyxl
+gunicorn
+psycopg2-binary
+whitenoise
