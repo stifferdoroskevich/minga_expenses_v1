@@ -18,7 +18,7 @@ fi
 source .env
 
 # Create backup directory
-BACKUP_DIR="backups/"
+BACKUP_DIR="/opt/minga_expenses/backups/"
 mkdir -p "$BACKUP_DIR"
 
 # Generate backup filename with timestamp
