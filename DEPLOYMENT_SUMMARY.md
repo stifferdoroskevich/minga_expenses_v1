@@ -173,17 +173,19 @@ ALLOWED_HOSTS=<vps-ip>,localhost,127.0.0.1
 CORS_ALLOWED_ORIGINS=https://<vps-ip>
 CSRF_TRUSTED_ORIGINS=https://<vps-ip>
 
-# Supabase PostgreSQL
+# Supabase Transaction Pooler (Recommended)
 DATABASE_ENGINE=django.db.backends.postgresql
-DB_NAME=<db-name>
-DB_USER=<db-user>
-DB_PASSWORD=<db-password>
-DB_HOST=<host>.supabase.co
-DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres.<project-ref>
+DB_PASSWORD=<password>
+DB_HOST=aws-0-eu-central-1.pooler.supabase.com
+DB_PORT=6543
 
 STATIC_ROOT=/app/staticfiles
 MEDIA_ROOT=/app/media
 ```
+
+**💡 Tip:** Use Supabase's Transaction Pooler instead of direct connection for better performance with Docker.
 
 ### Frontend (.env.production)
 

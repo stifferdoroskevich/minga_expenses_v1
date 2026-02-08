@@ -24,6 +24,35 @@ fi
 
 echo "📁 Current directory: $PROJECT_ROOT"
 
+# Pre-deployment database check
+echo "🔍 Running pre-deployment checks..."
+bash CICD/scripts/check-db.sh || {
+    echo "⚠️  Pre-deployment check failed!"
+    read -p "Continue anyway? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Deployment cancelled."
+        exit 1
+    fi
+}
+
+# Create database backup
+echo ""
+echo "💾 Creating database backup..."
+bash CICD/scripts/backup-db.sh || {
+    echo "⚠️  Backup failed!"
+    read -p "Continue without backup? (y/N): " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Deployment cancelled."
+        exit 1
+    fi
+}
+
+echo ""
+echo "🚀 Starting deployment..."
+echo ""
+
 # Pull latest changes from git (if in git repo)
 if [ -d ".git" ]; then
     echo "📥 Pulling latest changes from git..."

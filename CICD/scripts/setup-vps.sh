@@ -26,7 +26,8 @@ apt-get install -y \
     git \
     nginx \
     certbot \
-    python3-certbot-nginx
+    python3-certbot-nginx \
+    postgresql-client
 
 # Install Docker
 echo "🐳 Installing Docker..."

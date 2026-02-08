@@ -243,18 +243,25 @@ CORS_ALLOWED_ORIGINS=https://<vps-ip>
 # CSRF Settings
 CSRF_TRUSTED_ORIGINS=https://<vps-ip>
 
-# Database (Supabase PostgreSQL)
+# Database (Supabase Transaction Pooler - Recommended)
 DATABASE_ENGINE=django.db.backends.postgresql
-DB_NAME=<supabase-db-name>
-DB_USER=<supabase-user>
+DB_NAME=postgres
+DB_USER=postgres.<your-project-ref>
 DB_PASSWORD=<supabase-password>
-DB_HOST=<supabase-host>.supabase.co
-DB_PORT=5432
+DB_HOST=aws-0-eu-central-1.pooler.supabase.com
+DB_PORT=6543
 
 # Static Files
 STATIC_ROOT=/app/staticfiles
 MEDIA_ROOT=/app/media
 ```
+
+**Note:** Using Supabase's Transaction Pooler is recommended for:
+- Better connection pooling with Docker containers
+- IPv4 compatibility (avoids IPv6 networking issues)
+- Optimized for short-lived connections
+
+Find your Transaction Pooler connection string in Supabase Dashboard → Project Settings → Database → Connection String → Transaction pooler.
 
 ### Frontend (.env.production in frontend/)
 
