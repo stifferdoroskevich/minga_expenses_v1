@@ -1,14 +1,14 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import Login from './pages/Login';
-import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import ExpenseList from './pages/ExpenseList';
 import ExpenseForm from './pages/ExpenseForm';
-import MasterListsManager from './pages/MasterListsManager';
 import ImportExpenses from './pages/ImportExpenses';
+import Settings from './pages/Settings';
+import Reports from './pages/Reports';
 
 function App() {
   return (
@@ -24,13 +24,16 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Home />} />
+            <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="expenses" element={<ExpenseList />} />
             <Route path="expenses/new" element={<ExpenseForm />} />
             <Route path="expenses/:id/edit" element={<ExpenseForm />} />
             <Route path="expenses/import" element={<ImportExpenses />} />
-            <Route path="master-lists" element={<MasterListsManager />} />
+            <Route path="reports" element={<Reports />} />
+            <Route path="settings" element={<Settings />} />
+            {/* backward compat redirect */}
+            <Route path="master-lists" element={<Navigate to="/settings" replace />} />
           </Route>
         </Routes>
       </Router>

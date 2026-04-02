@@ -1,86 +1,129 @@
-import { Link, Outlet } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import {
+  LayoutDashboard,
+  Receipt,
+  Plus,
+  BarChart2,
+  Settings,
+  Sun,
+  Moon,
+  LogOut,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
+
+const NAV_ITEMS = [
+  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/expenses', icon: Receipt, label: 'Expenses' },
+  null, // FAB placeholder
+  { to: '/reports', icon: BarChart2, label: 'Reports' },
+  { to: '/settings', icon: Settings, label: 'Settings' },
+];
 
 const Layout = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+  const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    if (window.confirm('Are you sure you want to logout?')) {
-      await logout();
-    }
-  };
+  const isActive = (path) =>
+    location.pathname === path || location.pathname.startsWith(path + '/');
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Bar */}
-      <nav className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex">
-              {/* Logo/Brand */}
-              <div className="flex-shrink-0 flex items-center">
-                <Link to="/" className="text-2xl font-bold text-blue-600">
-                  Minga Expenses
-                </Link>
-              </div>
-
-              {/* Navigation Links */}
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                <Link
-                  to="/dashboard"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  Dashboard
-                </Link>
-                <Link
-                  to="/expenses"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  Expenses
-                </Link>
-                <Link
-                  to="/expenses/new"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  New Expense
-                </Link>
-                <Link
-                  to="/master-lists"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                >
-                  Master Lists
-                </Link>
-              </div>
-            </div>
-
-            {/* Right side - User info and logout */}
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-700">
-                Welcome, <span className="font-medium">{user?.username}</span>
-              </span>
-              <a
-                href="http://127.0.0.1:8000/admin/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium"
-              >
-                Django Admin
-              </a>
-              <button
-                onClick={handleLogout}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 text-sm font-medium"
-              >
-                Logout
-              </button>
-            </div>
+    <div className="min-h-screen bg-background">
+      {/* Desktop top nav */}
+      <nav className="hidden md:flex border-b bg-card/60 backdrop-blur-sm sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 w-full flex items-center h-14 gap-6">
+          <Link to="/dashboard" className="font-bold text-lg text-primary mr-2">
+            Minga
+          </Link>
+          {NAV_ITEMS.filter(Boolean).map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={cn(
+                'text-sm font-medium transition-colors hover:text-foreground flex items-center gap-1.5',
+                isActive(item.to) ? 'text-foreground' : 'text-muted-foreground'
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.label}
+            </Link>
+          ))}
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">{user?.username}</span>
+            <Button variant="ghost" size="icon" onClick={toggleTheme} title="Toggle theme">
+              {theme === 'dark' ? (
+                <Sun className="h-4 w-4" />
+              ) : (
+                <Moon className="h-4 w-4" />
+              )}
+            </Button>
+            <Button variant="ghost" size="icon" onClick={logout} title="Logout">
+              <LogOut className="h-4 w-4" />
+            </Button>
           </div>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Mobile top bar */}
+      <header className="md:hidden flex items-center justify-between px-4 h-12 border-b bg-card/60 backdrop-blur-sm sticky top-0 z-40">
+        <Link to="/dashboard" className="font-bold text-base text-primary">
+          Minga
+        </Link>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="icon" onClick={toggleTheme}>
+            {theme === 'dark' ? (
+              <Sun className="h-4 w-4" />
+            ) : (
+              <Moon className="h-4 w-4" />
+            )}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={logout}>
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
+      </header>
+
+      {/* Main content — extra bottom padding on mobile for bottom nav */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-8">
         <Outlet />
       </main>
+
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
+        <div className="flex items-end justify-around h-16 px-2">
+          {NAV_ITEMS.map((item, i) => {
+            if (!item) {
+              return (
+                <button
+                  key="fab"
+                  onClick={() => navigate('/expenses/new')}
+                  className="relative -top-5 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  <Plus className="h-6 w-6" />
+                </button>
+              );
+            }
+            const active = isActive(item.to);
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={cn(
+                  'flex flex-col items-center gap-0.5 py-1 px-3 rounded-lg transition-colors',
+                  active ? 'text-primary' : 'text-muted-foreground'
+                )}
+              >
+                <item.icon className="h-5 w-5" />
+                <span className="text-[10px] font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
     </div>
   );
 };

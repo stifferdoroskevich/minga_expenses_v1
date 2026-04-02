@@ -2,7 +2,7 @@ import apiClient from './client';
 
 // Company API
 export const companyAPI = {
-  getAll: () => apiClient.get('companies/'),
+  getAll: (params) => apiClient.get('companies/', { params: { page_size: 1000, ...params } }),
   get: (id) => apiClient.get(`companies/${id}/`),
   create: (data) => apiClient.post('companies/', data),
   update: (id, data) => apiClient.put(`companies/${id}/`, data),
@@ -11,7 +11,7 @@ export const companyAPI = {
 
 // Payment Form API
 export const paymentFormAPI = {
-  getAll: () => apiClient.get('payment-forms/'),
+  getAll: (params) => apiClient.get('payment-forms/', { params: { page_size: 1000, ...params } }),
   get: (id) => apiClient.get(`payment-forms/${id}/`),
   create: (data) => apiClient.post('payment-forms/', data),
   update: (id, data) => apiClient.put(`payment-forms/${id}/`, data),
@@ -20,7 +20,7 @@ export const paymentFormAPI = {
 
 // Expense Type API
 export const expenseTypeAPI = {
-  getAll: () => apiClient.get('expense-types/'),
+  getAll: (params) => apiClient.get('expense-types/', { params: { page_size: 1000, ...params } }),
   get: (id) => apiClient.get(`expense-types/${id}/`),
   create: (data) => apiClient.post('expense-types/', data),
   update: (id, data) => apiClient.put(`expense-types/${id}/`, data),
