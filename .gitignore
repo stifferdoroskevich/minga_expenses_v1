@@ -32,3 +32,5 @@ executed.md
 *.xlsx
 
 .claude
+/backups
+notes.txt
